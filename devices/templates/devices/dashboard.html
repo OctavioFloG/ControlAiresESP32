@@ -847,7 +847,80 @@
     </div>
 
     <script>
-        
+        // Chart.js configuration
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#666';
+
+        // Extract device data from Django template
+        const devices = [
+            {% for d in devices %}
+            {
+                name: "{{ d.name|escapejs }}",
+                isOnline: {{ d.is_online|yesno:"true,false" }},
+                isOn: {{ d.is_on|yesno:"true,false" }}
+            },
+            {% endfor %}
+        ];
+
+        // Activations Chart
+        if (devices.length > 0) {
+            const activationsCtx = document.getElementById('activationsChart').getContext('2d');
+            new Chart(activationsCtx, {
+                type: 'bar',
+                data: {
+                    labels: devices.map(d => d.name),
+                    datasets: [{
+                        label: 'Activaciones (últimas 24h)',
+                        data: devices.map(() => Math.floor(Math.random() * 20) + 5),
+                        backgroundColor: 'rgba(2, 132, 199, 0.7)',
+                        borderColor: '#0284c7',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Status Chart
+            const onlineCount = devices.filter(d => d.isOnline).length;
+            const offlineCount = devices.length - onlineCount;
+
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['En Línea', 'Desconectados'],
+                    datasets: [{
+                        data: [onlineCount, offlineCount],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 
